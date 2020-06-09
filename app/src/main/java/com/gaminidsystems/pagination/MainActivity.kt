@@ -3,8 +3,9 @@ package com.gaminidsystems.pagination
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_main.*
 import org.json.JSONArray
 import org.json.JSONException
@@ -13,14 +14,11 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 
-
 class MainActivity : AppCompatActivity() {
 
     private val viewItems: MutableList<Study> = mutableListOf()
 
-    private var mAdapter: RecyclerView.Adapter<*>? = null
-    private var layoutManager: RecyclerView.LayoutManager? = null
-
+    private lateinit var studyViewModel: StudyViewModel
     private val TAG = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,11 +26,31 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         recycler_view_id.setHasFixedSize(true)
-        layoutManager = LinearLayoutManager(this)
-        recycler_view_id.layoutManager = layoutManager
-        mAdapter = RecyclerAdapter(this,viewItems)
+        recycler_view_id.layoutManager = LinearLayoutManager(applicationContext)
+        val mAdapter = RecyclerAdapter(this,viewItems)
         recycler_view_id.adapter = mAdapter
+
+        studyViewModel = ViewModelProviders.of(this).get(StudyViewModel::class.java)
+
+        studyViewModel.studies.observe(this, Observer { study ->
+            study?.let {
+                mAdapter.setStudies(study)
+            }
+        })
+        searchDB(mAdapter)
         addItemsFromJSON()
+    }
+    private fun searchDB(mAdapter: RecyclerAdapter){
+        search_button_id.setOnClickListener {
+            var searchtext = study_edit_text.text.toString()
+
+            studyViewModel.getStudyById(searchtext).observe(this , Observer { study ->
+                study?.let {
+                    mAdapter.getStudiesById(study)
+                    mAdapter.notifyDataSetChanged()
+                }
+            })
+        }
     }
 
     private fun addItemsFromJSON() {
@@ -47,8 +65,9 @@ class MainActivity : AppCompatActivity() {
                 val overall_status = itemObj.getString("overall_status")
                 val source = itemObj.getString("source")
                 val study_type = itemObj.getString("study_type")
-                val studies = Study(nct_id, brief_title, phase, overall_status, source, study_type)
-                viewItems.add(studies)
+
+                var study = Study(nct_id, brief_title, phase, overall_status, source, study_type)
+                studyViewModel.insert(study)
             }
         } catch (e: JSONException) {
             Log.d(TAG, "addItemsFromJSON: ", e)

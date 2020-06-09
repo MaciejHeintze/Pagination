@@ -15,7 +15,7 @@ class RecyclerAdapter(
 ) :
     RecyclerView.Adapter<ViewHolder>() {
     private val context: Context
-    private val listRecyclerItem: List<Any>
+    private var listRecyclerItem: List<Any>
 
     inner class ItemViewHolder(itemView: View) : ViewHolder(itemView) {
         val nct_id: TextView
@@ -36,20 +36,8 @@ class RecyclerAdapter(
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): ViewHolder {
-        return when (i) {
-            TYPE -> {
-                val layoutView: View = LayoutInflater.from(viewGroup.context).inflate(
-                    R.layout.list_item, viewGroup, false
-                )
-                ItemViewHolder(layoutView)
-            }
-            else -> {
-                val layoutView: View = LayoutInflater.from(viewGroup.context).inflate(
-                    R.layout.list_item, viewGroup, false
-                )
-                ItemViewHolder(layoutView)
-            }
-        }
+        val itemView = LayoutInflater.from(viewGroup.context).inflate(R.layout.list_item, viewGroup, false)
+        return ItemViewHolder(itemView)
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, i: Int) {
@@ -79,6 +67,15 @@ class RecyclerAdapter(
                 itemViewHolder.study_type.text = "Study type: ${studies.study_type}"
             }
         }
+    }
+    fun setStudies(listRecyclerItem: List<Study>){
+        this.listRecyclerItem = listRecyclerItem
+        notifyDataSetChanged()
+    }
+
+    fun getStudiesById(listRecyclerItem: List<Study>){
+        this.listRecyclerItem = listRecyclerItem
+        notifyDataSetChanged()
     }
 
     override fun getItemCount(): Int {
