@@ -2,6 +2,7 @@ package com.gaminidsystems.pagination
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -24,7 +25,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        progress_bar_id.visibility = View.VISIBLE
         recycler_view_id.setHasFixedSize(true)
         recycler_view_id.layoutManager = LinearLayoutManager(applicationContext)
         val mAdapter = RecyclerAdapter(this,viewItems)
@@ -35,8 +36,24 @@ class MainActivity : AppCompatActivity() {
         studyViewModel.studies.observe(this, Observer { study ->
             study?.let {
                 mAdapter.setStudies(study)
+                progress_bar_id.visibility = View.INVISIBLE
             }
         })
+
+//        recycler_view_id.addOnScrollListener(object : RecyclerViewPaginator(recycler_view_id) {
+//            override val isLastPage: Boolean
+//                get() = viewModel.isLastPage()
+//
+//            override fun loadMore(start: Long, count: Long) {
+//                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+//            }
+//
+//            override fun loadMore(page: Long) {
+//                viewModel.loadData(page)
+//            }
+//        })
+
+
         searchDB(mAdapter)
         addItemsFromJSON()
     }
